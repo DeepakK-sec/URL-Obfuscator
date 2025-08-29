@@ -50,6 +50,11 @@
     button:hover {
       background: #00c8b8;
     }
+    p.disclaimer {
+      font-size: 0.8rem; 
+      color: #ccc; 
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -59,18 +64,11 @@
     <button onclick="obfuscate()">Obfuscate</button>
     <textarea id="output" readonly placeholder="Result will appear here..."></textarea>
 
-</div>
-    <div class="box">
-  <h2>URL Obfuscator</h2>
-  <input id="input" type="text" placeholder="Enter URL here..." />
-  <button onclick="obfuscate()">Obfuscate</button>
-  <textarea id="output" readonly placeholder="Result will appear here..."></textarea>
-
-  <!-- Disclaimer -->
-  <p style="font-size: 0.8rem; color: #ccc; margin-top: 10px;">
-    ⚠️ For security research and safe link sharing only. Do not use for malicious purposes.
-  </p>
-</div>
+    <!-- Disclaimer -->
+    <p class="disclaimer">
+      ⚠️ For security research and safe link sharing only. Do not use for malicious purposes.
+    </p>
+  </div>
 
   <script>
     function obfuscate() {
@@ -81,3 +79,4 @@
   </script>
 </body>
 </html>
+
