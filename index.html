@@ -1,314 +1,71 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>URL Obfuscator</title>
-  <meta name="description" content="A single-file static URL obfuscator with a cyberpunk vibe. Generate obfuscated links that auto-decode and redirect when opened." />
   <style>
-    :root{
-      --glass-bg: rgba(10, 10, 20, 0.55);
-      --glass-brd: rgba(200, 0, 255, 0.35);
-      --neon-pink: #ff38d4;
-      --neon-cyan: #00f0ff;
-      --neon-purple: #a066ff;
-      --text: #e6f3ff;
-      --muted: #a7b3c2;
-      --success: #2ee59d;
-      --danger: #ff6b6b;
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: url("https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=1920&auto=format&fit=crop") 
+                  no-repeat center center/cover;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #fff;
     }
-
-    /* Cyberpunk background */
-    body{
-      margin:0; min-height:100dvh; color:var(--text); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
-      display:grid; place-items:center; overflow-x:hidden; background:#05060a;
-      background-image: linear-gradient(180deg, rgba(5,6,10,.6), rgba(5,6,12,.9)),
-        url('https://images.unsplash.com/photo-1549880338-65ddcdfd017b?q=80&w=1920&auto=format&fit=crop');
-      background-size: cover; background-position: center; background-attachment: fixed;
+    .box {
+      background: rgba(0, 0, 0, 0.6);
+      padding: 20px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
     }
-
-    .wrap{ width:min(980px, 92vw); margin: 4vmin auto; }
-
-    .card{
-      background: var(--glass-bg);
-      backdrop-filter: blur(10px) saturate(120%);
-      -webkit-backdrop-filter: blur(10px) saturate(120%);
-      border: 1px solid var(--glass-brd);
-      border-radius: 24px; padding: clamp(16px, 3.2vmin, 32px);
-      box-shadow: 0 10px 35px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.04) inset;
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      font-size: 1rem;
     }
-
-    h1{
-      font-weight: 800; letter-spacing:.5px; margin: 0 0 .5rem 0; line-height:1.1;
-      text-shadow: 0 0 8px rgba(160, 102, 255, .45);
+    textarea {
+      height: 100px;
+      resize: none;
     }
-    .subtitle{ color: var(--muted); margin: 0 0 1.25rem 0 }
-
-    label{ display:block; font-weight:600; margin:.5rem 0 .35rem }
-    input[type="text"], input[type="url"], select, textarea{
-      width:100%; padding: 12px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.12);
-      background: rgba(5,7,15,.6); color: var(--text); outline:none;
-      box-shadow: 0 0 0 2px transparent; transition: box-shadow .2s ease, border-color .2s ease;
+    button {
+      margin-top: 10px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      background: #00ffe7;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
     }
-    input:focus, select:focus, textarea:focus{ box-shadow: 0 0 0 3px rgba(160, 102, 255, .35); border-color: var(--neon-purple) }
-
-    .row{ display:grid; grid-template-columns: 1fr; gap:12px }
-    @media (min-width: 760px){ .row.two{ grid-template-columns: 1.2fr .8fr } }
-
-    .btns{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px }
-    button, .btn-link{
-      appearance:none; border:none; border-radius: 14px; padding: 12px 16px; font-weight:700; letter-spacing:.3px;
-      background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink)); color:#080810; cursor:pointer;
-      box-shadow: 0 10px 20px rgba(255,56,212,.25), 0 0 0 1px rgba(255,255,255,.05) inset;
-      transition: transform .05s ease, filter .2s ease;
+    button:hover {
+      background: #00c8b8;
     }
-    button:hover{ filter: brightness(1.05) }
-    button:active{ transform: translateY(1px) }
-    .btn-secondary{ background: linear-gradient(135deg, var(--neon-cyan), #5cf2c7) }
-    .btn-ghost{ background: rgba(255,255,255,.06); color:var(--text); box-shadow: 0 0 0 1px rgba(255,255,255,.12) inset }
-
-    .output{ margin-top:14px; display:grid; gap:10px }
-    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace }
-
-    .pill{ display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; font-size:.9rem; color:#03131a;
-      background: linear-gradient(135deg, rgba(46,229,157,.25), rgba(0,240,255,.25)); border:1px solid rgba(0,240,255,.45);
-      box-shadow: 0 10px 20px rgba(0,240,255,.15);
-    }
-
-    .small{ font-size:.85rem; color:var(--muted) }
-    .footer{ text-align:center; margin-top:16px; color:var(--muted); font-size:.9rem }
-
-    .notice{ margin-top:12px; padding:10px 12px; border-radius:12px; background: rgba(255,255,255,.05); border:1px dashed rgba(255,255,255,.2) }
-
-    /* Decoder view */
-    .decoder{ margin-top: 18px; padding: 12px; border-radius: 16px; background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.12) }
-    .count{ font-variant-numeric: tabular-nums; font-weight:800 }
   </style>
 </head>
 <body>
-  <main class="wrap card" role="main">
-    <h1>Cyberpunk URL Obfuscator</h1>
-    <p class="subtitle">Quickly obfuscate a URL for casual sharing. Links you generate will <span class="pill">auto-decode & redirect</span> when opened.</p>
-
-    <section aria-labelledby="builder">
-      <div class="row two">
-        <div>
-          <label for="targetUrl">Target URL</label>
-          <input id="targetUrl" type="url" placeholder="https://example.com/very/long?query=string" autocomplete="off" />
-        </div>
-        <div>
-          <label for="method">Obfuscation Method</label>
-          <select id="method">
-            <option value="b64">Base64</option>
-            <option value="urlenc">Percent-encode</option>
-            <option value="hex">Hex</option>
-            <option value="revb64">Reverse+Base64</option>
-            <option value="xor">XOR (with key)</option>
-          </select>
-          <div id="keyWrap" style="display:none; margin-top:8px">
-            <label for="key" style="margin-top:0">Key (for XOR)</label>
-            <input id="key" type="text" placeholder="secret" class="mono" autocomplete="off" />
-          </div>
-        </div>
-      </div>
-
-      <div class="btns">
-        <button id="gen" title="Generate an obfuscated link you can share">Generate Link</button>
-        <button id="copyLink" class="btn-secondary" disabled>Copy Link</button>
-        <button id="copyPayload" class="btn-ghost" disabled>Copy Payload</button>
-      </div>
-
-      <div class="output">
-        <div>
-          <label for="resultLink">Obfuscated Link</label>
-          <input id="resultLink" type="text" class="mono" readonly placeholder="Your obfuscated link will appear here" />
-        </div>
-        <div>
-          <label for="payload">Raw Payload</label>
-          <textarea id="payload" rows="3" class="mono" readonly placeholder="Encoded payload only (for custom uses)"></textarea>
-        </div>
-      </div>
-
-      <div class="notice small">
-        <strong>Heads-up:</strong> Obfuscation ≠ encryption. This is for casual hiding/clean links, not security or privacy. Always verify destinations before visiting.
-      </div>
-    </section>
-
-    <section class="decoder" id="decoder" hidden>
-      <h3 style="margin:.25rem 0 0">Decoder</h3>
-      <p class="small" id="decodeInfo">Parsing obfuscated hash…</p>
-      <div class="btns">
-        <button id="goNow" class="btn-secondary">Open Now</button>
-        <button id="cancel" class="btn-ghost">Cancel Redirect</button>
-      </div>
-    </section>
-
-    <p class="footer small">Made as a single-file static page. You can host it on GitHub Pages, S3, Netlify, or any static host.</p>
-  </main>
+  <div class="box">
+    <h2>URL Obfuscator</h2>
+    <input id="input" type="text" placeholder="Enter URL here..." />
+    <button onclick="obfuscate()">Obfuscate</button>
+    <textarea id="output" readonly placeholder="Result will appear here..."></textarea>
+  </div>
 
   <script>
-    // ---------- Helpers ----------
-    const qs = (sel, el=document) => el.querySelector(sel);
-    const $ = {
-      url: qs('#targetUrl'),
-      method: qs('#method'),
-      keyWrap: qs('#keyWrap'),
-      key: qs('#key'),
-      gen: qs('#gen'),
-      copyLink: qs('#copyLink'),
-      copyPayload: qs('#copyPayload'),
-      resultLink: qs('#resultLink'),
-      payload: qs('#payload'),
-      decoder: qs('#decoder'),
-      decodeInfo: qs('#decodeInfo'),
-      goNow: qs('#goNow'),
-      cancel: qs('#cancel'),
-    };
-
-    const encodeHex = s => Array.from(new TextEncoder().encode(s)).map(b => b.toString(16).padStart(2,'0')).join('');
-    const decodeHex = h => new TextDecoder().decode(Uint8Array.from((h.match(/.{1,2}/g)||[]).map(b => parseInt(b,16))));
-
-    const xorStr = (s, key) => {
-      if(!key) return s;
-      let out = [];
-      for(let i=0;i<s.length;i++){
-        out.push(String.fromCharCode(s.charCodeAt(i) ^ key.charCodeAt(i % key.length)));
-      }
-      return out.join('');
-    };
-
-    const obfuscate = (url, method, key='') => {
-      switch(method){
-        case 'b64': return btoa(url);
-        case 'urlenc': return encodeURIComponent(url);
-        case 'hex': return encodeHex(url);
-        case 'revb64': return btoa(url.split('').reverse().join(''));
-        case 'xor': return encodeHex(xorStr(url, key));
-        default: return btoa(url);
-      }
-    };
-
-    const deobfuscate = (payload, method, key='') => {
-      try{
-        switch(method){
-          case 'b64': return atob(payload);
-          case 'urlenc': return decodeURIComponent(payload);
-          case 'hex': return decodeHex(payload);
-          case 'revb64': return btoa('')? atob(payload).split('').reverse().join('') : atob(payload).split('').reverse().join('');
-          case 'xor': return xorStr(decodeHex(payload), key);
-          default: return atob(payload);
-        }
-      }catch(e){
-        return '';
-      }
-    };
-
-    function currentOrigin(){
-      // Works even if hosted from a file:// by falling back to location.href without hash
-      const base = location.href.split('#')[0];
-      return base;
+    function obfuscate() {
+      const input = document.getElementById("input").value.trim();
+      const result = input.replace(/\./g, "[.]");
+      document.getElementById("output").value = result;
     }
-
-    function buildLink(method, payload, key){
-      const parts = [method, payload];
-      if(method === 'xor') parts.push(encodeURIComponent(key||''));
-      const hash = '#obf=' + parts.join(':');
-      return currentOrigin() + hash;
-    }
-
-    async function copy(text){
-      try{ await navigator.clipboard.writeText(text); return true }catch(e){
-        // Fallback
-        const ta = document.createElement('textarea');
-        ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
-        return true;
-      }
-    }
-
-    // ---------- UI Behavior ----------
-    $.method.addEventListener('change', () => {
-      $.keyWrap.style.display = $.method.value === 'xor' ? 'block' : 'none';
-    });
-
-    $.gen.addEventListener('click', async () => {
-      const url = ($.url.value || '').trim();
-      if(!url){ alert('Please enter a target URL.'); $.url.focus(); return }
-      let method = $.method.value;
-      let key = $.key.value;
-      if(method === 'xor' && !key){
-        if(!confirm('No XOR key provided. Proceed without a key? (This offers no obfuscation benefit)')) return;
-      }
-      const payload = obfuscate(url, method, key);
-      const link = buildLink(method, payload, key);
-
-      $.resultLink.value = link;
-      $.payload.value = payload;
-      $.copyLink.disabled = $.copyPayload.disabled = false;
-    });
-
-    $.copyLink.addEventListener('click', async () => {
-      if(!$.resultLink.value) return;
-      const ok = await copy($.resultLink.value);
-      if(ok){
-        $.copyLink.textContent = 'Copied!';
-        setTimeout(()=> $.copyLink.textContent = 'Copy Link', 1200);
-      }
-    });
-
-    $.copyPayload.addEventListener('click', async () => {
-      if(!$.payload.value) return;
-      const ok = await copy($.payload.value);
-      if(ok){
-        $.copyPayload.textContent = 'Copied!';
-        setTimeout(()=> $.copyPayload.textContent = 'Copy Payload', 1200);
-      }
-    });
-
-    // ---------- Auto-decoder on hash open ----------
-    let redirectTimer = null; let countdown = 7;
-    function parseHash(){
-      const hash = decodeURIComponent(location.hash||'');
-      if(!hash.startsWith('#obf=')) return null;
-      const body = hash.replace('#obf=','');
-      const parts = body.split(':');
-      const method = parts[0];
-      const payload = parts[1] || '';
-      const key = parts[2] ? decodeURIComponent(parts[2]) : '';
-      return { method, payload, key };
-    }
-
-    function showDecoder(toUrl){
-      $.decoder.hidden = false;
-      const dest = (()=>{ try{ return new URL(toUrl).host }catch{ return toUrl.slice(0, 64) + (toUrl.length>64?'…':'') }})();
-      countdown = 7;
-      $.decodeInfo.innerHTML = `Destination detected: <strong>${dest}</strong><br/>Redirecting in <span class="count" id="count">${countdown}</span>s…`;
-      redirectTimer = setInterval(()=>{
-        countdown--; const c = qs('#count'); if(c) c.textContent = String(countdown);
-        if(countdown <= 0){ clearInterval(redirectTimer); location.replace(toUrl); }
-      }, 1000);
-    }
-
-    function cancelRedirect(){ if(redirectTimer){ clearInterval(redirectTimer); redirectTimer=null; $.decodeInfo.textContent='Redirect canceled.' } }
-
-    $.goNow.addEventListener('click', () => {
-      cancelRedirect();
-      const spec = parseHash();
-      if(!spec) return;
-      const dest = deobfuscate(spec.payload, spec.method, spec.key);
-      if(dest) location.href = dest; else alert('Unable to decode link.');
-    });
-    $.cancel.addEventListener('click', cancelRedirect);
-
-    function maybeDecodeOnLoad(){
-      const spec = parseHash();
-      if(!spec) return;
-      const url = deobfuscate(spec.payload, spec.method, spec.key);
-      if(url){ showDecoder(url); }
-      else{ $.decoder.hidden = false; $.decodeInfo.textContent = 'Could not decode this link. It may be malformed.' }
-    }
-
-    window.addEventListener('hashchange', () => { cancelRedirect(); maybeDecodeOnLoad(); });
-    maybeDecodeOnLoad();
   </script>
 </body>
 </html>
